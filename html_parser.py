@@ -24,9 +24,9 @@ class HtmlParser(object):
         #url
         res_data['url'] = page_url
         # <span property="v:itemreviewed">代码大全</span>
-        res_data['bookName'] = soup.find('span', property='v:itemreviewed').get_text()
+        res_data['bookName'] = soup.find('span', property='v:itemreviewed').string
         # <strong class="ll rating_num " property="v:average"> 9.3 </strong>
-        res_data['score'] = soup.find('strong', class_='ll rating_num ').get_text()
+        res_data['score'] = soup.find('strong', class_='ll rating_num ').string
         '''
         <div id="info" class="">
             <span>
@@ -40,7 +40,7 @@ class HtmlParser(object):
         </div>
         '''
         info = soup.find('div', id='info')
-        try: #有的页面没有出版社
+        try: #有的页面信息不全
             res_data['author'] = info.find(text=' 作者').next_element.next_element.string
             res_data['publisher'] = info.find(text='出版社:').next_element
             res_data['time'] = info.find(text='出版年:').next_element
