@@ -30,9 +30,12 @@ class HtmlOutputer(object):
             fout.write('<tr><td>定价：</td><td>%s</td></tr>' % data['price'].encode('utf-8'))
             fout.write('<tr><td>出版社：</td><td>%s</td></tr>' % data['publisher'].encode('utf-8'))
             fout.write('<tr><td>出版时间：</td><td>%s</td></tr>' % data['time'].encode('utf-8'))
+            fout.write('<tr><td>ISBN：</td><td>%s</td></tr>' % data['ISBN'].encode('utf-8'))
             fout.write('</table>')
-            fout.write('<p>%s' % data['intro'].encode('utf-8'))
-            fout.write('</p><hr>') #加上分割线
+            
+            fout.write('<p><h3>简介：</h3>%s</p>' % data['intro'].encode('utf-8'))
+            fout.write('<p><h3>热评：</h3>%s</p><hr>' % data['hotReview']) #加上分割线<hr>
+            
 
         fout.write('</body>')
         fout.write('</html>')

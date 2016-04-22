@@ -5,9 +5,12 @@ Created on 2016/4/3
  description: 
 '''
 from bs4 import BeautifulSoup
-import re
+import re, html_downloader
 
 class HtmlParser(object):
+    def __init__(self):
+        self.downloader = html_downloader.HtmlDownloader() #html网页下载器
+        
     def _get_new_urls(self, soup):
         new_urls = set()
         #同样喜欢区域：<div id="db-rec-section" class="block5 subject_show knnlike">
@@ -18,8 +21,21 @@ class HtmlParser(object):
             new_url = link['href']
             new_urls.add(new_url)
         return new_urls
+    
+    def _get_hot_review(self, soup):
+        try:
+            firstReview = soup.find('div', class_='review-short').find('a', class_='pl')
+            url = firstReview['href']
+        except:
+            return None #没有热评返回空
+        html_cont = self.downloader.download(url)
+        soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
+        hotReview = soup.find('span', property='v:description') #包含了一定html的格式，只需修改一小部分即可直接显示
+        hotReviewFormatted = str(hotReview).replace('</br>', '') #删除最后的换行
+        hotReviewFormatted = hotReviewFormatted.replace('<br> <br>', '<br><br>') #删除乱码
+        return hotReviewFormatted
         
-    def _get_new_data(self, page_url, soup):
+    def _get_new_data(self, page_url, soup, threshold):
         res_data = {}
         #url
         res_data['url'] = page_url
@@ -27,6 +43,8 @@ class HtmlParser(object):
         res_data['bookName'] = soup.find('span', property='v:itemreviewed').string
         # <strong class="ll rating_num " property="v:average"> 9.3 </strong>
         res_data['score'] = soup.find('strong', class_='ll rating_num ').string
+        if res_data['score'] < threshold: #评分低于阈值，舍弃
+            return None
         '''
         <div id="info" class="">
             <span>
@@ -37,28 +55,32 @@ class HtmlParser(object):
             <span class="pl">出版年:</span> 2007-8<br>
             <span class="pl">页数:</span> 138<br>
             <span class="pl">定价:</span> 15.00元<br>
+            <span class="pl">ISBN:</span> 9787115281586 #前面有一个空格
         </div>
         '''
         info = soup.find('div', id='info')
-        try: #有的页面信息不全
+        try: #舍弃页面信息不完全的url
             res_data['author'] = info.find(text=' 作者').next_element.next_element.string
             res_data['publisher'] = info.find(text='出版社:').next_element
             res_data['time'] = info.find(text='出版年:').next_element
             res_data['price'] = info.find(text='定价:').next_element
+            res_data['ISBN'] = info.find(text='ISBN:').next_element.strip()
             res_data['intro'] = soup.find('div', class_='intro').find('p').string
         except:
+            print 'invalid data'
             return None
-        if res_data['intro'] == None:
+        res_data['hotReview'] = self._get_hot_review(soup)
+        if res_data['intro'] == None: #舍弃简介为空的页面，一般是旧版的书籍
             return None
         
         return res_data
         
-    def parse(self, page_url, html_cont):
+    def parse(self, page_url, html_cont, threshold):
         if page_url is None or html_cont is None:
             return
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
         new_urls = self._get_new_urls(soup)
-        new_data = self._get_new_data(page_url, soup)
+        new_data = self._get_new_data(page_url, soup, threshold)
         
         return new_urls, new_data
 
