@@ -12,14 +12,14 @@ class HtmlParser(object):
         self.downloader = html_downloader.HtmlDownloader() #html网页下载器
         
     def _get_new_urls(self, soup):
-        new_urls = set()
+        new_urls = []
         #同样喜欢区域：<div id="db-rec-section" class="block5 subject_show knnlike">
         recommend = soup.find('div', class_='block5 subject_show knnlike')
         #<a href="https://book.douban.com/subject/11614538/" class="">程序员的职业素养</a>
         links = recommend.find_all('a', href=re.compile(r"https://book\.douban\.com/subject/\d+/$"))
         for link in links:
             new_url = link['href']
-            new_urls.add(new_url)
+            new_urls.append(new_url)
         return new_urls
     
     def _get_hot_review(self, soup):
@@ -44,7 +44,7 @@ class HtmlParser(object):
         # <strong class="ll rating_num " property="v:average"> 9.3 </strong>
         res_data['score'] = soup.find('strong', class_='ll rating_num ').string
         if res_data['score'] < threshold: #评分低于阈值，舍弃
-            return None
+            return res_data
         '''
         <div id="info" class="">
             <span>
