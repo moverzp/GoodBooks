@@ -23,13 +23,17 @@ class MongoDB(object):
         if self.newUrlsCol.find({'url':url}).count() == self.oldUrlsCol.find({'url':url}).count() == 0:
             self.newUrlsCol.insert({'url': url})
     #在一堆url中取新的url进行保存    
-    def add_new_urls(self, urls, data, threshold):
+    def add_new_urls(self, urls, data):
         if urls is None or len(urls) == 0:
             return
-        if data['score'] < threshold: #评分过低的书籍推荐的url基本没有价值，舍弃
+        if data is None: #舍弃书籍的推荐url也舍弃
             return
         for url in urls:
             self.add_new_url(url)
+    #强制加入一个新的url
+    def add_new_url_forcibly(self, url):
+        self.oldUrlsCol.remove({'url': url})
+        self.newUrlsCol.insert({'url': url})    
             
     def has_new_url(self):
         return self.newUrlsCol.find().count() != 0
@@ -55,12 +59,14 @@ class MongoDB(object):
         ws.write(0,1,u'评分')
         ws.write(0,2,u'价格')
         ws.write(0,3,u'出版社')
+        ws.write(0,4,u'url')
         row = 1
         for data in allDatas:
             ws.write( row, 0, data['bookName'] )
             ws.write( row, 1, data['score'] )
             ws.write( row, 2, data['price'] )
             ws.write( row, 3, data['publisher'] )
+            ws.write( row, 4, data['url'] )
             row += 1
         w.save('GoodBooks.xls') #保存
             

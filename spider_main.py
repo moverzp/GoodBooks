@@ -20,17 +20,20 @@ class SpiderMain(object):
             print 'craw %d : %s' % (count, new_url)
             html_cont = self.downloader.download(new_url) #下载该url的html
             new_urls, new_data = self.parser.parse(new_url, html_cont, threshold) #分析html，返回urls和data
-            self.mongodb.add_new_urls(new_urls, new_data, threshold) #将获取的urls添加进未爬取的url集合中，排除已爬取过的url
+            self.mongodb.add_new_urls(new_urls, new_data) #将获取的urls添加进未爬取的url集合中，排除已爬取过的url
             self.mongodb.collect_data(new_data, new_urls) #连同其推荐书籍一起保存
             
             time.sleep(0.01)
-            if count == 3:
+            if count == 1000:
                 break
             count += 1
             
         #except:
-        #    print 'craw failed'
-        self.mongodb.output_xls()
+            #print 'craw failed'
+            #错误的url重新加入未爬取url集合
+            #self.mongodb.add_new_url_forcibly(new_url)
+        #finally:
+            self.mongodb.output_xls()
 
 if __name__ == "__main__":
     root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》

@@ -43,8 +43,8 @@ class HtmlParser(object):
         res_data['bookName'] = soup.find('span', property='v:itemreviewed').string
         # <strong class="ll rating_num " property="v:average"> 9.3 </strong>
         res_data['score'] = soup.find('strong', class_='ll rating_num ').string
-        if res_data['score'] < threshold: #评分低于阈值，舍弃
-            return res_data
+        if float(res_data['score']) < threshold: #评分低于阈值，舍弃
+            return None
         '''
         <div id="info" class="">
             <span>
@@ -81,7 +81,7 @@ class HtmlParser(object):
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
         new_urls = self._get_new_urls(soup)
         new_data = self._get_new_data(page_url, soup, threshold)
-        
+
         return new_urls, new_data
 
 
