@@ -5,8 +5,8 @@ Created on 2016/4/3
  description: 
 '''
 import urllib2
-import random
 import time
+from time import sleep
 
 class HtmlDownloader(object):
     def __init__(self):
@@ -21,26 +21,45 @@ class HtmlDownloader(object):
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/44.0.2403.89 Chrome/44.0.2403.89 Safari/537.36'
         ]
         
+    def _download(self, url, index):
+        curHeader = self.headers[index] #获取一个浏览器头描述
+        try:
+            request = urllib2.Request(url)
+            request.add_header('User-Agent', curHeader)
+            response = urllib2.urlopen(request)    
+        except urllib2.URLError, e:
+            if hasattr(e,"code"):
+                print e.code
+            if hasattr(e,"reason"):
+                print e.reason
+            if e.code == 403:
+                return 403
+            if e.code == 404:
+                return 404
+        if response.getcode() == 200: #200表示读取成功
+                return response.read()
+        
     def download(self, url):
+        times = 1
         if url is None:
             return None
-        while True: #如果出现403错误，等待后继续爬取
-            #curHeader = self.headers[random.randint(0, len(self.headers)-1)] #随机获取一个浏览器头描述
-            curHeader = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/44.0.2403.89 Chrome/44.0.2403.89 Safari/537.36'
-            try:
-                request = urllib2.Request(url)
-                request.add_header('User-Agent', curHeader)
-                response = urllib2.urlopen(request)    
-            except urllib2.URLError, e:
-                if hasattr(e,"code"):
-                    print e.code
-                if hasattr(e,"reason"):
-                    print e.reason
-                if e.code == 403:
-                    time.sleep(10)
-                    return self.download(url)
-            if response.getcode() == 200: #200表示读取成功
-                return response.read()
+        index = 1
+        while True:
+            html_cont = self._download(url, index)
+            if html_cont == 404: #404错误，将url放入404Urls
+                return 404
+            elif html_cont == 403: #如果出现403等错误，等待后继续爬取
+                index = ( index + 1 ) % len(self.headers)
+                import random
+                sleeptime = random.randint(20, 30)
+                print 'sleeping %d times...' % times
+                times += 1
+                sleep(sleeptime)
+            else:
+                return html_cont
+                
+                
+            
 
 
             

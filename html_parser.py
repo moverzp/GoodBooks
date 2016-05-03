@@ -23,30 +23,34 @@ class HtmlParser(object):
         return new_urls
     
     def _get_hot_review(self, soup):
-        try:
+        try: #没有热评，返回空
             firstReview = soup.find('div', class_='review-short').find('a', class_='pl')
             url = firstReview['href']
         except:
-            return None #没有热评返回空
-        html_cont = self.downloader.download(url)
-        soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
-        hotReview = soup.find('span', property='v:description') #包含了一定html的格式，只需修改一小部分即可直接显示
-        hotReviewFormatted = str(hotReview).replace('</br>', '') #删除最后的换行
-        hotReviewFormatted = hotReviewFormatted.replace('<br> <br>', '<br><br>') #删除乱码
-        return hotReviewFormatted
+            return None 
+        try: #页面错误，返回空
+            html_cont = self.downloader.download(url)
+            soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
+            hotReview = soup.find('span', property='v:description') #包含了一定html的格式，只需修改一小部分即可直接显示
+            hotReviewFormatted = str(hotReview).replace('</br>', '') #删除最后的换行
+            hotReviewFormatted = hotReviewFormatted.replace('<br> <br>', '<br><br>') #删除乱码
+            return hotReviewFormatted
+        except:
+            return None
         
     def _get_new_data(self, page_url, soup, threshold):
         res_data = {}
-        #url
-        res_data['url'] = page_url
-        # <span property="v:itemreviewed">代码大全</span>
-        res_data['bookName'] = soup.find('span', property='v:itemreviewed').string
-        # <strong class="ll rating_num " property="v:average"> 9.3 </strong>
-        res_data['score'] = soup.find('strong', class_='ll rating_num ').string
-        if float(res_data['score']) < threshold: #评分低于阈值，舍弃
-            return None
-        '''
-        <div id="info" class="">
+        try: #舍弃页面信息不完全的url
+            #url
+            res_data['url'] = page_url
+            #<span property="v:itemreviewed">代码大全</span>
+            res_data['bookName'] = soup.find('span', property='v:itemreviewed').string
+            #<strong class="ll rating_num " property="v:average"> 9.3 </strong>
+            res_data['score'] = soup.find('strong', class_='ll rating_num ').string
+            if float(res_data['score']) < threshold: #评分低于阈值，舍弃
+                return None
+            '''
+            <div id="info" class="">
             <span>
               <span class="pl"> 作者</span>:
               <a class="" href="/search/Steve%20McConnell">Steve McConnell</a>
@@ -56,10 +60,9 @@ class HtmlParser(object):
             <span class="pl">页数:</span> 138<br>
             <span class="pl">定价:</span> 15.00元<br>
             <span class="pl">ISBN:</span> 9787115281586 #前面有一个空格
-        </div>
-        '''
-        info = soup.find('div', id='info')
-        try: #舍弃页面信息不完全的url
+            </div>
+            '''
+            info = soup.find('div', id='info')        
             res_data['author'] = info.find(text=' 作者').next_element.next_element.string
             res_data['publisher'] = info.find(text='出版社:').next_element
             res_data['time'] = info.find(text='出版年:').next_element
@@ -79,8 +82,11 @@ class HtmlParser(object):
         if page_url is None or html_cont is None:
             return
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
-        new_urls = self._get_new_urls(soup)
         new_data = self._get_new_data(page_url, soup, threshold)
+        if new_data is None:
+            new_urls = None
+        else:
+            new_urls = self._get_new_urls(soup)
 
         return new_urls, new_data
 
