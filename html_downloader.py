@@ -51,7 +51,7 @@ class HtmlDownloader(object):
             elif html_cont == 403: #如果出现403等错误，等待后继续爬取
                 index = ( index + 1 ) % len(self.headers)
                 import random
-                sleeptime = random.randint(20, 30)
+                sleeptime = random.randint(20, 30) * times
                 print 'sleeping %d times...' % times
                 times += 1
                 sleep(sleeptime)

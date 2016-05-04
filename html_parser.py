@@ -48,6 +48,7 @@ class HtmlParser(object):
             #<strong class="ll rating_num " property="v:average"> 9.3 </strong>
             res_data['score'] = soup.find('strong', class_='ll rating_num ').string
             if float(res_data['score']) < threshold: #评分低于阈值，舍弃
+                print 'invalid data'
                 return None
             '''
             <div id="info" class="">

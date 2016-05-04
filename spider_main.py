@@ -28,7 +28,7 @@ class SpiderMain(object):
                 self.mongodb.collect_data(new_data, new_urls) #连同其推荐书籍一起保存
             
             time.sleep(0.1)
-            if count == 1000:
+            if count == 10000:
                 break
             count += 1
             
