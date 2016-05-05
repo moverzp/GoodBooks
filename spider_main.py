@@ -27,7 +27,7 @@ class SpiderMain(object):
                 self.mongodb.add_new_urls(new_urls, new_data) #将获取的urls添加进未爬取的url集合中，排除已爬取过的url
                 self.mongodb.collect_data(new_data, new_urls) #连同其推荐书籍一起保存
             
-            time.sleep(0.1)
+            #time.sleep(0.2)
             if count == 10000:
                 break
             count += 1
@@ -37,12 +37,13 @@ class SpiderMain(object):
             #错误的url重新加入未爬取url集合
             #self.mongodb.add_new_url_forcibly(new_url)
         #finally:
-            self.mongodb.output_xls()
+            #self.mongodb.output_xls()
 
 if __name__ == "__main__":
     root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
     obj_spider = SpiderMain()
     obj_spider.craw(root_url, 7.9) #默认最低评分书籍
+    #obj_spider.mongodb.output_xls()
     print 'All down!'
 
 

@@ -1,3 +1,4 @@
 ﻿*.pyc
 *.*project
 *.settings/
+cookie*.txt
