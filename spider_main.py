@@ -3,6 +3,7 @@
 
 import url_manager, html_downloader, html_parser, html_outputer, mongoDB
 import time
+import random
 
 class SpiderMain(object):
     def __init__(self):
@@ -27,7 +28,7 @@ class SpiderMain(object):
                 self.mongodb.add_new_urls(new_urls, new_data) #将获取的urls添加进未爬取的url集合中，排除已爬取过的url
                 self.mongodb.collect_data(new_data, new_urls) #连同其推荐书籍一起保存
             
-            #time.sleep(0.2)
+            time.sleep(random.uniform(0.1, 0.3))
             if count == 10000:
                 break
             count += 1
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
     obj_spider = SpiderMain()
     obj_spider.craw(root_url, 7.9) #默认最低评分书籍
-    #obj_spider.mongodb.output_xls()
+    obj_spider.mongodb.output_xls()
     print 'All down!'
 
 
