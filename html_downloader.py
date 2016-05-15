@@ -54,14 +54,17 @@ class HtmlDownloader(object):
             request.add_header('User-Agent', Header)
             response = urllib2.urlopen(request)    
         except urllib2.URLError, e:
-            winsound.Beep(600,1000) #蜂鸣发出警告，音量600， 时常1000ms
             if hasattr(e,"code"):
                 print e.code
             if hasattr(e,"reason"):
                 print e.reason
             if e.code == 403:
+                winsound.Beep(600,1000) #蜂鸣发出警告，音量600， 时常1000ms
                 return 403
             if e.code == 404:
+                winsound.Beep(600,300) #蜂鸣发出警告，音量600， 时常300ms
+                sleep(0.1)
+                winsound.Beep(600,300) #蜂鸣发出警告，音量600， 时常300ms
                 return 404
         if response.getcode() == 200: #200表示读取成功
                 return response.read()

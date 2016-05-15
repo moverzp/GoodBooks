@@ -74,7 +74,8 @@ class HtmlParser(object):
             print 'invalid data'
             return None
         res_data['hotReview'] = self._get_hot_review(soup)
-        if res_data['intro'] == None: #舍弃简介为空的页面，一般是旧版的书籍
+        #舍弃简介或者热评为空的页面，一般是旧版的书籍
+        if res_data['intro'] == None or res_data['hotReview'] == None: 
             return None
         
         return res_data

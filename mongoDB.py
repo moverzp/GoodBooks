@@ -60,18 +60,20 @@ class MongoDB(object):
         allDatas = self.bookCol.find()
         w = Workbook() #创建一个工作簿
         ws = w.add_sheet('sheet1') #创建一个工作表
-        ws.write(0,0,u'书名')
-        ws.write(0,1,u'评分')
-        ws.write(0,2,u'价格')
-        ws.write(0,3,u'出版社')
-        ws.write(0,4,u'url')
+        ws.write(0,0,u'序号')
+        ws.write(0,1,u'书名')
+        ws.write(0,2,u'评分')
+        ws.write(0,3,u'价格')
+        ws.write(0,4,u'出版社')
+        ws.write(0,5,u'url')
         row = 1
         for data in allDatas:
-            ws.write( row, 0, data['bookName'] )
-            ws.write( row, 1, data['score'] )
-            ws.write( row, 2, data['price'] )
-            ws.write( row, 3, data['publisher'] )
-            ws.write( row, 4, data['url'] )
+            ws.write( row, 0, row )
+            ws.write( row, 1, data['bookName'] )
+            ws.write( row, 2, float(data['score']) )
+            ws.write( row, 3, data['price'] )
+            ws.write( row, 4, data['publisher'] )
+            ws.write( row, 5, data['url'] )
             row += 1
         w.save('GoodBooks.xls') #保存
             

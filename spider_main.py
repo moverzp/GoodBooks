@@ -29,7 +29,7 @@ class SpiderMain(object):
                 self.mongodb.collect_data(new_data, new_urls) #连同其推荐书籍一起保存
             
             time.sleep(random.uniform(0.1, 0.3))
-            if count == 10000:
+            if count == 100000:
                 break
             count += 1
             
@@ -41,9 +41,10 @@ class SpiderMain(object):
             #self.mongodb.output_xls()
 
 if __name__ == "__main__":
-    root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
+    #root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
+    root_url = 'https://book.douban.com/subject/2567698/'
     obj_spider = SpiderMain()
-    obj_spider.craw(root_url, 7.9) #默认最低评分书籍
+    #obj_spider.craw(root_url, 7.9) #默认最低评分书籍
     obj_spider.mongodb.output_xls()
     print 'All down!'
 
