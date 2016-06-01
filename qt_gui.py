@@ -7,6 +7,7 @@ Created on 2016年5月24日
 import sys
 from PyQt4.QtGui import *  
 from PyQt4.QtCore import *
+from shelve import Shelf
 
 #QTextCodec.setCodecForTr(QTextCodec.codecForName("utf8"))
 
@@ -68,6 +69,19 @@ class MyGui(QDialog):
         bookLayout.addWidget(hotReviewLabel, 0, 2, Qt.AlignTop)
         bookLayout.addWidget(hotReviewTextEdit, 1, 2, 5, 1)
         
+        #书架栏布局
+        bookShelfLabel = QLabel(u'我的书架：')
+        bookShelfTabel = QTableWidget(8, 2)
+        bookShelfTabel.setEditTriggers(QAbstractItemView.NoEditTriggers) #禁止编辑
+        bookShelfTabel.setHorizontalHeaderLabels([u'书名', u'操作'])
+        bookShelfTabel.setColumnWidth(0, 150) 
+        bookShelfTabel.setColumnWidth(1, 32) 
+        bookShelfTabel.setItem(0, 0, QTableWidgetItem(u'集体智慧编程'))
+        bookShelfTabel.setItem(0, 1, QTableWidgetItem(u'展开'))
+        
+        bookShelfLayout = QVBoxLayout()
+        bookShelfLayout.addWidget(bookShelfLabel)
+        bookShelfLayout.addWidget(bookShelfTabel)
  
         #推荐栏布局
         recommendTabel = QTableWidget(3, 8)
@@ -84,10 +98,15 @@ class MyGui(QDialog):
         mainLayout = QGridLayout(self)
         mainLayout.setSpacing(10)
         mainLayout.addLayout(searchLayout, 0, 0)
-        mainLayout.addLayout(bookLayout, 0, 1)
-        mainLayout.addLayout(recommendLayout, 1, 0, 1, 2)
+        mainLayout.addLayout(bookLayout, 0, 1, 1, 2)
+        mainLayout.addLayout(bookShelfLayout, 0, 3)
+        mainLayout.addLayout(recommendLayout, 1, 0, 1, 4)
         mainLayout.setRowStretch(0, 3)
         mainLayout.setRowStretch(1, 1)
+        mainLayout.setColumnStretch(0, 4)
+        #mainLayout.setColumnStretch(1, 2)
+        mainLayout.setColumnStretch(3, 3)
+
         mainLayout.setSizeConstraint(QLayout.SetFixedSize) #固定对话框
         
         
