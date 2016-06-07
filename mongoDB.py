@@ -1,11 +1,15 @@
-﻿# coding=utf-8
+#-*-coding:UTF-8-*-
 '''
 Created on 2016年4月27日
  @author: moverzp
  description: mongoDB相关的操作，替代原先的url管理器和html输出器
 '''
+import sys
 import pymongo
 from pyExcelerator import *
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class MongoDB(object):
     def __init__(self):
@@ -15,6 +19,7 @@ class MongoDB(object):
         self.oldUrlsCol = db.oldUrls #选择集合oldUrls
         self.bookCol = db.book #选择集合book
         self.notFoundUrls = db.notFoundUrls #选择集合notFoundUrls
+        self.userCol = db.user #选择集合user
         
     #url管理器功能
     #保存一个新的url
@@ -50,10 +55,10 @@ class MongoDB(object):
         self.notFoundUrls.insert({'url':url})
          
     #html输出器功能
-    def collect_data(self, data, urls):
-        if data is None: #存在书籍由于评分过低或者信息不全被舍弃但是还有推荐书籍的情况
+    def collect_data(self, data, recommendUrls):
+        if data is None or data['hotReview'] == 'None': #存在书籍由于评分过低或者信息不全被舍弃但是还有推荐书籍的情况
             return
-        data['recommendUrls'] = urls
+        data['recommendUrls'] = recommendUrls
         self.bookCol.insert(data)
         
     def output_xls(self):
@@ -76,8 +81,27 @@ class MongoDB(object):
             ws.write( row, 5, data['url'] )
             row += 1
         w.save('GoodBooks.xls') #保存
-            
+        
+    ###############################################################################
+    #与qt_gui来往的方法
+    def search_book(self, keyword):
+        doc = self.bookCol.find({'bookName': {'$regex': ".*"+ str(keyword) + ".*"}}) #str()将QString转为string
+        return doc
+    
+    def get_user_docs(self):
+        doc = self.userCol.find()
+        return doc
+    
+    def add_data_to_user(self, data):
+        #需要防止反复添加同一本书
+        if 0 == self.userCol.find({'url':data['url']}).count():
+            self.userCol.insert(data)
+    def remove_data_from_user(self, url):
+        self.userCol.remove({'url':url})
 
+    def search_book_by_url(self, url):
+        doc = self.bookCol.find_one({'url':url}) #正常情况下url唯一
+        return doc
             
     
     
