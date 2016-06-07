@@ -24,14 +24,14 @@ class HtmlParser(object):
     
     def _get_hot_review(self, soup):
         try: #没有热评，返回空
-            firstReview = soup.find('div', class_='review-short').find('a', class_='pl')
+            firstReview = soup.find('div', class_='rr').find('a')
             url = firstReview['href']
         except:
-            return None 
+            return None
         try: #页面错误，返回空
             html_cont = self.downloader.download(url)
-            soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
-            hotReview = soup.find('span', property='v:description') #包含了一定html的格式，只需修改一小部分即可直接显示
+            hotSoup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
+            hotReview = hotSoup.find('span', property='v:description') #包含了一定html的格式，只需修改一小部分即可直接显示
             hotReviewFormatted = str(hotReview).replace('</br>', '') #删除最后的换行
             hotReviewFormatted = hotReviewFormatted.replace('<br> <br>', '<br><br>') #删除乱码
             return hotReviewFormatted
@@ -75,7 +75,8 @@ class HtmlParser(object):
             return None
         res_data['hotReview'] = self._get_hot_review(soup)
         #舍弃简介或者热评为空的页面，一般是旧版的书籍
-        if res_data['intro'] == None or res_data['hotReview'] == None: 
+        if res_data['intro'] == None or res_data['hotReview'] == None or res_data['hotReview'] == 'None':
+            print 'invalid data'
             return None
         
         return res_data
@@ -85,7 +86,7 @@ class HtmlParser(object):
             return
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
         new_data = self._get_new_data(page_url, soup, threshold)
-        if new_data is None:
+        if new_data is None or new_data['hotReview'] == 'None':
             new_urls = None
         else:
             new_urls = self._get_new_urls(soup)
