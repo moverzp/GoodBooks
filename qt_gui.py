@@ -198,7 +198,22 @@ class MyGui(QDialog):
         self.urlEdit.setText(book['url'].strip())
         self.introTextEdit.setText(book['intro'])
         self.hotReviewTextEdit.setHtml(book['hotReview'])
+       
+##############################################################################################
+    def recommend_good_books(self):
+        #获取书架上所有书籍的url，并统计其频数
+        urlFrequency = {} #保存推荐书籍url的频数
+        for i in self.bookshelfDoc:
+            book = self.mongodb.search_book_by_url(i['url'])
+            for recommendUrl in book['recommendUrls']:
+                if recommendUrl not in urlFrequency.keys():
+                    urlFrequency[recommendUrl] = 0
+                urlFrequency[recommendUrl] += 1
         
+        #按照频数排序取前10
+    
+    
+    
 app=QApplication(sys.argv)  
 gui = MyGui()
 gui.show()
