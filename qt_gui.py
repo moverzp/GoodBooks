@@ -160,6 +160,8 @@ class MyGui(QDialog):
         column = 0
         for url in self.recommendUrls:
             book = self.mongodb.search_book_by_url(url)
+            if book is None:
+                continue
             self.recommendTable.insertColumn(column)
             self.recommendTable.setColumnWidth(column, 107)
             self.recommendTable.setItem(0, column, QTableWidgetItem( book['bookName'] ))

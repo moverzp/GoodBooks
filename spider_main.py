@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import url_manager, html_downloader, html_parser, html_outputer, mongoDB
+import url_manager, html_downloader, html_parser, mongoDB
 import time
 import random
 
@@ -10,7 +10,6 @@ class SpiderMain(object):
         self.urls = url_manager.UrlManager() #url管理器
         self.downloader = html_downloader.HtmlDownloader() #html网页下载器
         self.parser = html_parser.HtmlParser() #html分析器
-        self.outputer = html_outputer.HtmlOutputer() #html输出器
         self.mongodb = mongoDB.MongoDB() #数据库操作器
         
     def craw(self, root_url, threshold):
@@ -19,6 +18,7 @@ class SpiderMain(object):
         #try:
         while self.mongodb.has_new_url():
             new_url = self.mongodb.get_new_url() #从url管理器中获取一个未爬取的url
+            
             print 'craw %d : %s' % (count, new_url)
             html_cont = self.downloader.download(new_url) #下载该url的html
             if html_cont == 404: #某些页面一直是404，一般涉及政治问题
@@ -41,11 +41,14 @@ class SpiderMain(object):
             #self.mongodb.output_xls()
 
 if __name__ == "__main__":
-    #root_url = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
-    root_url = 'https://book.douban.com/subject/2567698/'
+    rootUrl = "https://book.douban.com/subject/1477390/" #起始地址为《代码大全》
     obj_spider = SpiderMain()
-    #obj_spider.craw(root_url, 7.9) #默认最低评分书籍
-    obj_spider.mongodb.output_xls()
+    #爬取之前先保存两个cookie文件，防止403forbidden
+    #obj_spider.downloader.save_cookie("cookie1.txt", rootUrl) #未登录运行
+    #obj_spider.downloader.save_cookie("cookie2.txt", rootUrl) #登录运行
+    
+    #obj_spider.craw(rootUrl, 7.9) #开始爬取，默认最低评分为7.9
+    #obj_spider.mongodb.output_xls() #以xls格式输出爬取结果
     print 'All down!'
 
 
