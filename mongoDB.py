@@ -20,6 +20,7 @@ class MongoDB(object):
         self.bookCol = db.book #选择集合book
         self.notFoundUrls = db.notFoundUrls #选择集合notFoundUrls
         self.userCol = db.user #选择集合user
+        self.recommendData = db.recommendData #选择集合recommendData
         
     #url管理器功能
     #保存一个新的url
