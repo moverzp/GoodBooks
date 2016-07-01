@@ -4,11 +4,12 @@ Created on 2016年5月24日
  @author: moverzp
  description: 使用pyqt4编写GUI界面
 '''
-import sys
+import sys, os
 from PyQt4.QtGui import *  
 from PyQt4.QtCore import *
-import mongoDB
+import mongoDB, recommend
 import operator
+from Dialog import Dialog
 
 # reload(sys)
 # sys.setdefaultencoding('utf-8')
@@ -21,6 +22,8 @@ class MyGui(QDialog):
     def __init__(self, parent = None):
         QWidget.__init__(self)
         self.mongodb = mongoDB.MongoDB() #数据库操作器
+        self.recommend = recommend.Recommend() #推荐器
+        self.spiderGui = SpiderGui()
         
         #函数
         self._init_gui()
@@ -45,13 +48,15 @@ class MyGui(QDialog):
         self.searchTable.setHorizontalHeaderLabels([u'书名', u'评分'])
         self.searchTable.setSelectionBehavior(QAbstractItemView.SelectRows)  #整行选中的方式
         self.searchTable.setColumnWidth(0, 220)
-        self.searchTable.setColumnWidth(1, 30) 
+        self.searchTable.setColumnWidth(1, 30)
+        self.spiderButton = QPushButton(u'爬虫窗口')
         
         searchLayout = QGridLayout()
         searchLayout.addWidget(self.searchLabel, 0, 0)
         searchLayout.addWidget(self.searchEdit, 0, 1)
         searchLayout.addWidget(self.searchButton, 0, 2)
         searchLayout.addWidget(self.searchTable, 1, 0, 1, 3)
+        searchLayout.addWidget(self.spiderButton, 2, 0)
         
         #书籍栏布局
         self.bookNameLabel = QLabel(u'书名：')
@@ -129,10 +134,12 @@ class MyGui(QDialog):
         mainLayout.setColumnStretch(3, 3)
 
         mainLayout.setSizeConstraint(QLayout.SetFixedSize) #固定对话框
+        self.setWindowFlags(Qt.Window)
         
     def _init_signal_slot(self):
         self.connect(self.searchButton, SIGNAL('clicked()'), self.slot_search_keyword)
         self.connect(self.searchTable, SIGNAL('itemClicked (QTableWidgetItem *)'), self.slot_click_search_table)
+        self.connect(self.spiderButton, SIGNAL('clicked()'), self.spiderGui.show)
         
         self.connect(self.joinBookShelf, SIGNAL('clicked()'), self.slot_join_bookshelf)
         self.connect(self.deleteFromBookShelf, SIGNAL('clicked()'), self.slot_delete_from_bookshelf)
@@ -233,29 +240,60 @@ class MyGui(QDialog):
 ##############################################################################################
     def _recommend_good_books(self):
         #获取书架上所有书籍的url，并统计其频数
-        urlFrequency = {} #保存推荐书籍url的频数
+        urls = [] #保存推荐书籍url的频数
         for i in self.bookshelfDoc2:
-            book = self.mongodb.search_book_by_url(i['url'])
-            for recommendUrl in book['recommendUrls']:
-                if recommendUrl not in urlFrequency.keys():
-                    urlFrequency[recommendUrl] = 0
-                urlFrequency[recommendUrl] += 1
-        #按照频数排序
-        sorted_urlFrequency = sorted(urlFrequency.iteritems(), key=operator.itemgetter(1), reverse=True)
-        #取前10的url
-        count = 0
-        self.recommendUrls = [] #清空推荐列表url
-        for i in sorted_urlFrequency:
-            self.recommendUrls.append(i[0])
-            count += 1
-            if count == 10:
-                break
+            urls.append(i['url'])
+        self.recommendUrls = self.recommend.itemCF(urls)
         #展示推荐书籍
         self._display_recommend_books()
+ 
+       
+class SpiderGui(QDialog):
+    def __init__(self, parent = None):
+        QWidget.__init__(self)
+        self._init_gui()
+        self._init_slot()
+    
+    def _init_gui(self):
+        self.setWindowTitle("Spider")
+        #搜索栏布局
+        self.urlLabel = QLabel(u'初始url：')
+        self.urlEdit = QLineEdit()
+        self.saveCookie1Button = QPushButton(u'保存cookie1')
+        self.saveCookie2Button = QPushButton(u'保存cookie2')
+        self.spideButton = QPushButton(u'开始爬取')
         
+        icon = QPixmap('res/spiderIcon.jpg')
+        iconLabel = QLabel()
+        iconLabel.setPixmap(icon)
+        
+        layout = QGridLayout(self)
+        layout.addWidget(self.urlLabel, 0, 0)
+        layout.addWidget(self.urlEdit, 0, 1, 1, 2)
+        layout.addWidget(iconLabel, 1, 0, 2, 1)
+        layout.addWidget(self.saveCookie1Button, 1, 1)
+        layout.addWidget(self.saveCookie2Button, 1, 2)
+        layout.addWidget(self.spideButton, 2, 1, 1, 2)
+        
+    def _init_slot(self):
+        self.connect(self.saveCookie1Button, SIGNAL('clicked()'), self._saveCookie1)
+        self.connect(self.saveCookie2Button, SIGNAL('clicked()'), self._saveCookie2)
+        self.connect(self.spideButton, SIGNAL('clicked()'), self._spide)
     
-
-    
+    def _saveCookie1(self):
+        pass
+    def _saveCookie2(self):
+        pass
+    def _spide(self):
+        cookie1Exist = os.path.exists('cookie1.txt')
+        cookie2Exist = os.path.exists('cookie2.txt')
+        if not cookie1Exist:
+            QMessageBox.information(self,u"警告", u"cookie1.txt不存在，请先保存。")
+            return
+        if not cookie2Exist:
+            QMessageBox.information(self,u"警告", u"cookie2.txt不存在，请先保存。")
+            return
+        print 'hehe'
     
 app=QApplication(sys.argv)  
 gui = MyGui()
