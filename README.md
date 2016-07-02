@@ -5,6 +5,7 @@
 从豆瓣爬取书籍，使用推荐算法推荐可能喜欢的书籍。
 
 给定初始豆瓣页面(默认为《代码大全》)url，然后提取该网页书籍的名称，评分，作者，出版社，出版时间，价格，ISBN，简介，热评和豆瓣推荐书籍的url。只要url管理器中的未爬取url集合不为空或者未到达指定爬取的次数，就一直爬取网页的信息以及新的url。
+[点击查看原图](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/78433749.jpg)
 ![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/78433749.jpg)
 
 ##使用Python2.7编写，需要的Python模块：
@@ -17,7 +18,7 @@
 
 ##使用说明
 * 安装上面提到的Python模块
-* 安装mongoDB数据库，<span style= "color:red;">每次运行程序之前一定要开启服务器mongod.exe</span>
+* 安装mongoDB数据库，**每次运行程序之前一定要开启服务器mongod.exe**
 * 在mongoDB数据中创建GoodBooks数据库（[点击查看方法](http://www.yiibai.com/mongodb/mongodb_create_collection.html)），建立以下集合：
     * `newUrls`, 保存未爬取的url
     * `oldUrls`, 保存已爬取的url
