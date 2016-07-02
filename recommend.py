@@ -17,7 +17,7 @@ class Recommend(object):
         self.N = defaultdict(defaultdict) #用户个数
         self.W = defaultdict(defaultdict) #相似度矩阵
         #初始化的时候需要载入物品相似度矩阵
-        #self.load_matrix_w()
+        self.load_matrix_w()
     
     def _build_inver_table(self):
         doc = self.mongodb.bookCol.find()
@@ -103,13 +103,6 @@ class Recommend(object):
         for i in sorted_recommendUrls:
             res.append(i[0])
         return res
-         
-if __name__ == "__main__":
-    recommend = Recommend()
-    t1 = time.clock()
-    recommend.load_matrix_w()
-    t2 = time.clock()
-    print t2 - t1
 
 
 

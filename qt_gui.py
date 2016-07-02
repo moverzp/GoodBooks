@@ -10,6 +10,7 @@ from PyQt4.QtCore import *
 import mongoDB, recommend
 import operator
 from Dialog import Dialog
+from time import sleep
 
 # reload(sys)
 # sys.setdefaultencoding('utf-8')
@@ -24,7 +25,6 @@ class MyGui(QDialog):
         self.mongodb = mongoDB.MongoDB() #数据库操作器
         self.recommend = recommend.Recommend() #推荐器
         self.spiderGui = SpiderGui()
-        
         #函数
         self._init_gui()
         self._init_signal_slot()
@@ -247,20 +247,23 @@ class MyGui(QDialog):
         #展示推荐书籍
         self._display_recommend_books()
  
-       
+import spider_main
 class SpiderGui(QDialog):
     def __init__(self, parent = None):
         QWidget.__init__(self)
         self._init_gui()
         self._init_slot()
+        self.spider = spider_main.SpiderMain()
     
     def _init_gui(self):
         self.setWindowTitle("Spider")
-        #搜索栏布局
+
         self.urlLabel = QLabel(u'初始url：')
         self.urlEdit = QLineEdit()
+        self.urlEdit.setText('https://book.douban.com/subject/1477390/')
         self.saveCookie1Button = QPushButton(u'保存cookie1')
         self.saveCookie2Button = QPushButton(u'保存cookie2')
+        self.outputButton = QPushButton(u'导出xls文件')
         self.spideButton = QPushButton(u'开始爬取')
         
         icon = QPixmap('res/spiderIcon.jpg')
@@ -269,21 +272,26 @@ class SpiderGui(QDialog):
         
         layout = QGridLayout(self)
         layout.addWidget(self.urlLabel, 0, 0)
-        layout.addWidget(self.urlEdit, 0, 1, 1, 2)
+        layout.addWidget(self.urlEdit, 0, 1, 1, 3)
         layout.addWidget(iconLabel, 1, 0, 2, 1)
         layout.addWidget(self.saveCookie1Button, 1, 1)
         layout.addWidget(self.saveCookie2Button, 1, 2)
-        layout.addWidget(self.spideButton, 2, 1, 1, 2)
+        layout.addWidget(self.outputButton, 1, 3)
+        layout.addWidget(self.spideButton, 2, 1, 1, 3)
         
     def _init_slot(self):
         self.connect(self.saveCookie1Button, SIGNAL('clicked()'), self._saveCookie1)
         self.connect(self.saveCookie2Button, SIGNAL('clicked()'), self._saveCookie2)
         self.connect(self.spideButton, SIGNAL('clicked()'), self._spide)
+        self.connect(self.outputButton, SIGNAL('clicked()'), self._output_xls)
     
     def _saveCookie1(self):
-        pass
+        self.spider.downloader.save_cookie("cookie1.txt", rootUrl) #未登录运行
     def _saveCookie2(self):
-        pass
+        self.spider.downloader.save_cookie("cookie2.txt", rootUrl) #登录运行
+    def _output_xls(self):
+        self.spider.mongodb.output_xls() #以xls格式输出爬取结果
+        QMessageBox.information(self, u"通知", u"导出xls文件完成！")
     def _spide(self):
         cookie1Exist = os.path.exists('cookie1.txt')
         cookie2Exist = os.path.exists('cookie2.txt')
@@ -293,9 +301,20 @@ class SpiderGui(QDialog):
         if not cookie2Exist:
             QMessageBox.information(self,u"警告", u"cookie2.txt不存在，请先保存。")
             return
-        print 'hehe'
+        url = str(self.urlEdit.text())
+        self.spider.craw(url, 7.9)
+        print 'All down!'
     
-app=QApplication(sys.argv)  
+app=QApplication(sys.argv)
+splash = QSplashScreen(QPixmap('res/startImage.jpg')) #启动图片
+splash.show()
 gui = MyGui()
+#设置窗口图标
+icon = QIcon()
+icon.addPixmap(QPixmap('res/bookIcon.jpg'), QIcon.Normal, QIcon.Off)
+gui.setWindowIcon(icon)
+#显示主窗口
 gui.show()
+splash.finish(gui) #关闭启动图片
+
 app.exec_()  

@@ -1,9 +1,11 @@
+![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/29523713.jpg)
 # GoodBooks
 
 ##目标
-获得自己可能喜欢的优秀书籍的信息。
+从豆瓣爬取书籍，使用推荐算法推荐可能喜欢的书籍。
 
 给定初始豆瓣页面(默认为《代码大全》)url，然后提取该网页书籍的名称，评分，作者，出版社，出版时间，价格，ISBN，简介，热评和豆瓣推荐书籍的url。只要url管理器中的未爬取url集合不为空或者未到达指定爬取的次数，就一直爬取网页的信息以及新的url。
+![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/78433749.jpg)
 
 ##使用Python2.7编写，需要的Python模块：
 * `urllib2`, 高级Web交流模块，根据支持的协议下载数据
@@ -15,14 +17,15 @@
 
 ##使用说明
 * 安装上面提到的Python模块
-* 安装mongoDB数据库
-* 在mongoDB数据中创建GoodBooks数据库，建立以下集合：
-    * newUrls, 保存未爬取的url
-    * oldUrls, 保存已爬取的url
-    * book, 保存爬取的书籍信息
-    * notFoundUrls, 保存404错误的url
-    * user, 保存用户添加的书籍
-* 分别取消`spider_main.py`中的保存cookie文件的注释，生成文件`cookie1.txt`和`cookie2.txt`
+* 安装mongoDB数据库，<span style= "color:red;">每次运行程序之前一定要开启服务器mongod.exe</span>
+* 在mongoDB数据中创建GoodBooks数据库（[点击查看方法](http://www.yiibai.com/mongodb/mongodb_create_collection.html)），建立以下集合：
+    * `newUrls`, 保存未爬取的url
+    * `oldUrls`, 保存已爬取的url
+    * `book`, 保存爬取的书籍信息
+    * `notFoundUrls`, 保存404错误的url
+    * `user`, 保存用户添加的书籍
+* 先生成文件`cookie1.txt`和`cookie2.txt`，依次点击“保存cookie1”，“保存cookie2”按钮
+![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/57800400.jpg)
 
 ##文件
 * `spider_main.py`, 爬虫引擎，进行各项任务的调度
@@ -31,6 +34,13 @@
 * `html_parser.py`, html分析器，提取html中的数据和url
 * `mongoDB.py`, 数据库操作器，替代url管理器，html输出器
 * `qt_gui.py`, 用户界面
+* `recommend`, 推荐器，实现各种推荐算法
+
+##2016.07.02
+* 编写了爬虫界面，通过点击“爬虫窗口”按钮进入
+* 创建了推荐器，已经实现了“基于物品的协同过滤算法”
+* 修复了一些bug
+
 
 ##2016.06.10
 * 加入`qt_gui.py`，创建用户界面
