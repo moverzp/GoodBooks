@@ -16,11 +16,13 @@ class HtmlParser(object):
             new_urls = []
             #同样喜欢区域：<div id="db-rec-section" class="block5 subject_show knnlike">
             recommend = soup.find('div', class_='block5 subject_show knnlike')
-            #<a href="https://book.douban.com/subject/11614538/" class="">程序员的职业素养</a>
-            links = recommend.find_all('a', href=re.compile(r"https://book\.douban\.com/subject/\d+/$"))
-            for link in links:
-                new_url = link['href']
-                new_urls.append(new_url)
+            all_dd = recommend.find_all('dd')
+            for dd in all_dd:
+                #<a href="https://book.douban.com/subject/11614538/" class="">程序员的职业素养</a>
+                links = dd.find_all('a', href=re.compile(r"https://book\.douban\.com/subject/\d+/$"))
+                for link in links:
+                    new_url = link['href']
+                    new_urls.append(new_url)
             return new_urls
         except:
             return None
