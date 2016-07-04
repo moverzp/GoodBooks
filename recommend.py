@@ -7,15 +7,19 @@ Created on 2016年6月20日
 import mongoDB, math, pickle, time
 from collections import defaultdict #可以直接使用下标访问二维字典不存在的元素
 import sys, operator
+from operator import itemgetter
+from numpy import rank
+from time import sleep
 
 
 class Recommend(object):
     def __init__(self):
         self.mongodb = mongoDB.MongoDB() #数据库操作器
-        self.itemUsers = dict() #物品到用户的倒排表
+        self.userItems = dict() #用户到物品的倒排表
         self.C = defaultdict(defaultdict) #用户与用户共同喜欢物品的个数
         self.N = defaultdict(defaultdict) #用户个数
         self.W = defaultdict(defaultdict) #相似度矩阵
+        self.k = 20 #选取前k个最相似的物品计算预测相似度
         #初始化的时候需要载入物品相似度矩阵
         self.load_matrix_w()
     
@@ -25,33 +29,36 @@ class Recommend(object):
         for book in doc:
             print count
             count += 1
+            url = book['url']
+            if url not in self.userItems:
+                self.userItems[url] = set()
+            if book['recommendUrls'] is None: #有些书籍没有推荐的url
+                continue
             for i in book['recommendUrls']:
                 item = self.mongodb.search_book_by_url(i)
                 #如果物品为“无效书籍”，舍弃
                 if item is None:
                     continue
-                if i not in self.itemUsers:
-                    self.itemUsers[i] = set()
-                self.itemUsers[i].add(book['url'])
+                self.userItems[url].add(i)
                 
                 
-    def _cal_corated_items(self):
-        for i, users in self.itemUsers.items():
-            for u in users:
-                if u not in self.N.keys(): #如果一维字典中没有该键，初始化值为0
-                    self.N[u] = 0
-                self.N[u] += 1
-                for v in users:
-                    if u == v:
+    def _cal_corated_users(self):
+        for u, items in self.userItems.items():
+            for i in items:
+                if i not in self.N.keys(): #如果一维字典中没有该键，初始化值为0
+                    self.N[i] = 0
+                self.N[i] += 1
+                for j in items:
+                    if i == j:
                         continue
-                    if v not in self.C[u].keys(): #如果二维字典中没有该键，初始化值为0
-                        self.C[u][v] = 0
-                    self.C[u][v] += 1
+                    if j not in self.C[i].keys(): #如果二维字典中没有该键，初始化值为0
+                        self.C[i][j] = 0
+                    self.C[i][j] += 1
                     
     def _cal_matrix_W(self):
-        for u, related_users in self.C.items():
-            for v, cuv in related_users.items():
-                self.W[u][v] = cuv / math.sqrt(self.N[u] * self.N[v]) #余弦相似度
+        for i, related_items in self.C.items():
+            for j, cij in related_items.items():
+                self.W[i][j] = cij / math.sqrt(self.N[i] * self.N[j]) #余弦相似度
     
     def _save_matrix_w(self):
         f = open('matrixW.txt', 'w')
@@ -64,10 +71,13 @@ class Recommend(object):
         f.close()
     
     def cal_matrix_W(self):
+        self.W.clear()
+        print len(self.W)
+        sleep(3)
         print 'build inver table...'
         self._build_inver_table()
-        print 'cal corated items...'
-        self._cal_corated_items()
+        print 'cal corated users...'
+        self._cal_corated_users()
         print 'cal matrix W...'
         self._cal_matrix_W()
         print 'save matrix...'
@@ -77,34 +87,34 @@ class Recommend(object):
         
     #基于物品的协同过滤算法，输入为书本的urls，返回推荐的urls
     def itemCF(self, urls):
-        recommendUrls = {} #保存推荐的url及其对应的兴趣度，最多10个
-        for url in urls:
-            book = self.mongodb.search_book_by_url(url)
-            for i, j in self.W[url].items(): #i表示关联物品，j表示相似度
-                #如果已经包含了关联物品，跳过
-                if i in urls:
+        rank = dict() #保存推荐的url及其对应的兴趣度
+        for i in urls:
+            book = self.mongodb.search_book_by_url(i)
+            interest = float(book['score'])
+            #j表示某物品，wj表示物品i和物品j的相似度
+            for j, wj in sorted(self.W[i].items(), key=itemgetter(1), reverse=True)[0:self.k]:
+                #如果已经包含了物品j，跳过
+                if j in urls:
                     continue
-                #如果关联物品是无效书籍，跳过
-                if self.mongodb.search_book_by_url(i) is None:
+                #如果物品j是无效书籍，跳过
+                if self.mongodb.search_book_by_url(j) is None:
                     continue
-                #根据评分和相似度计算兴趣度，利用优先队列的思想更新推荐url
-                interest = float(book['score']) * j
-                if len(recommendUrls) < 10: #直接加入
-                    recommendUrls[i] = interest
-                else: #如果推荐书目>10，替换兴趣度最低的书籍
-                    if interest > min(recommendUrls.values()):
-                        index = min(recommendUrls, key=recommendUrls.get)
-                        del(recommendUrls[index])
-                        recommendUrls[i] = interest
+                #根据评分和相似度计算物品j的预测兴趣度
+                if j not in rank.keys():
+                    rank[j] = 0
+                rank[j] += interest * wj
         #按照兴趣度排序，返回推荐书籍的urls
-        sorted_recommendUrls = sorted(recommendUrls.iteritems(), key=operator.itemgetter(1), reverse=True)                
-        print 'sorted:\n', sorted_recommendUrls
+        sorted_rank = sorted(rank.iteritems(), key=operator.itemgetter(1), reverse=True)[0:10]          
+        print 'sorted:\n', sorted_rank
         res = []
-        for i in sorted_recommendUrls:
+        for i in sorted_rank:
             res.append(i[0])
-        return res
+        return res #只返回预测兴趣度前10的urls
 
-
+if __name__ == '__main__':
+    recommend = Recommend()
+    recommend.cal_matrix_W()
+    print 'all down!'
 
 
 

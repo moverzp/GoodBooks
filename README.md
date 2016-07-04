@@ -5,8 +5,9 @@
 从豆瓣爬取书籍，使用推荐算法推荐可能喜欢的书籍。
 
 给定初始豆瓣页面(默认为《代码大全》)url，然后提取该网页书籍的名称，评分，作者，出版社，出版时间，价格，ISBN，简介，热评和豆瓣推荐书籍的url。只要url管理器中的未爬取url集合不为空或者未到达指定爬取的次数，就一直爬取网页的信息以及新的url。
-[点击查看原图](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/78433749.jpg)
-![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-2/78433749.jpg)
+
+[点击查看原图](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-4/43366047.jpg)
+![](http://7xn9xp.com1.z0.glb.clouddn.com/16-7-4/43366047.jpg)
 
 ##使用Python2.7编写，需要的Python模块：
 * `urllib2`, 高级Web交流模块，根据支持的协议下载数据
